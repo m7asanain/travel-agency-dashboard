@@ -12,7 +12,7 @@ const MobileSidebar = () => {
   };
 
   return (
-    <div className="mobile-sidebar wrapper mt-[300px]">
+    <div className="mobile-sidebar wrapper">
       <header>
         <Link to="/">
           <img
