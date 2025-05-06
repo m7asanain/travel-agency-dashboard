@@ -99,6 +99,32 @@ const TripDetail = ({ loaderData }: Route.ComponentProps) => {
               ))}
             </ChipsDirective>
           </ChipListComponent>
+
+          {/* rating */}
+          <ul className="flex gap-1 items-center">
+            {Array(5)
+              .fill("null")
+              .map((_, index) => (
+                <li key={index}>
+                  <img
+                    src="/assets/icons/star.svg"
+                    alt="star"
+                    className="size-[18px]"
+                  />
+                </li>
+              ))}
+
+            <li className="ml-1">
+              <ChipListComponent>
+                <ChipsDirective>
+                  <ChipDirective
+                    text="4.9/5"
+                    cssClass="!bg-yellow-50 !text-yellow-700"
+                  />
+                </ChipsDirective>
+              </ChipListComponent>
+            </li>
+          </ul>
         </section>
       </section>
     </main>
