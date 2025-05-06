@@ -126,6 +126,43 @@ const TripDetail = ({ loaderData }: Route.ComponentProps) => {
             </li>
           </ul>
         </section>
+
+        <section className="title">
+          <article>
+            <h3>
+              {duration}-Day {country} {travelStyle}
+            </h3>
+            <p>
+              {budget}, {groupType}, and {interests}
+            </p>
+          </article>
+          <h2>{estimatedPrice}</h2>
+        </section>
+        <p className="text-sm md:text-lg font-normal text-dark-400">
+          {description}
+        </p>
+
+        {/* itinerary */}
+        <ul className="itinerary">
+          {itinerary?.map((dayPlan: DayPlan, index: number) => (
+            <li key={index}>
+              <h3>
+                Day {dayPlan.day}: {dayPlan.location}
+              </h3>
+
+              <ul>
+                {dayPlan.activities.map((activity, index: number) => (
+                  <li key={index}>
+                    <span className="flex-shring-0 p-18-semibold">
+                      {activity.time}
+                    </span>
+                    <p className="flex-grow">{activity.description}</p>
+                  </li>
+                ))}
+              </ul>
+            </li>
+          ))}
+        </ul>
       </section>
     </main>
   );
