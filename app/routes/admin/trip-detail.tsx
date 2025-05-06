@@ -1,8 +1,13 @@
 import type { LoaderFunctionArgs } from "react-router";
 import { getTripById } from "~/appwrite/trips";
 import type { Route } from "./+types/trip-detail";
-import { cn, parseTripData } from "~/lib/utils";
+import { cn, getFirstWord, parseTripData } from "~/lib/utils";
 import { Header, InfoPill } from "components";
+import {
+  ChipDirective,
+  ChipListComponent,
+  ChipsDirective,
+} from "@syncfusion/ej2-react-buttons";
 
 export const loader = async ({ params }: LoaderFunctionArgs) => {
   const { tripId } = params;
@@ -30,6 +35,13 @@ const TripDetail = ({ loaderData }: Route.ComponentProps) => {
     weatherInfo,
     country,
   } = tripData || {};
+
+  const pillItems = [
+    { text: travelStyle, bg: "!bg-pink-50 !text-pink-500" },
+    { text: groupType, bg: "!bg-primary-50 !text-primary-500" },
+    { text: budget, bg: "!bg-success-50 !text-success-700" },
+    { text: interests, bg: "!bg-navy-50 !text-navy-500" },
+  ];
 
   return (
     <main className="travel-detail wrapper">
@@ -73,6 +85,20 @@ const TripDetail = ({ loaderData }: Route.ComponentProps) => {
               )}
             />
           ))}
+        </section>
+
+        <section className="flex gap-3 md:gap-5 items-center flex-wrap">
+          <ChipListComponent id="travel-chip">
+            <ChipsDirective>
+              {pillItems.map((pill, i) => (
+                <ChipDirective
+                  key={i}
+                  text={getFirstWord(pill.text)}
+                  cssClass={`${pill.bg} !text-base !font-medium !px-4`}
+                />
+              ))}
+            </ChipsDirective>
+          </ChipListComponent>
         </section>
       </section>
     </main>
