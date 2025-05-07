@@ -14,9 +14,10 @@ export const loader = async ({ params }: LoaderFunctionArgs) => {
 
   if (!tripId) throw Error("Trip ID is required");
 
-  const trips = await getAllTrips(4, 0);
-
-  const trip = await getTripById(tripId);
+  const [trip, trips] = await Promise.all([
+    getTripById(tripId),
+    getAllTrips(4, 0),
+  ]);
 
   return {
     trip,
@@ -198,23 +199,24 @@ const TripDetail = ({ loaderData }: Route.ComponentProps) => {
             </div>
           </section>
         ))}
+      </section>
 
-        <section className="flex flex-col gap-6">
-          <h2 className="p-24-semibold text-dark-100">Popular Trips</h2>
-          <div className="trip-grid">
-            {allTrips.map((trip) => (
-              <TripCard
-                key={trip.id}
-                id={trip.id}
-                name={trip.name}
-                imageUrl={trip.imageUrls[0]}
-                location={trip.itinerary?.[0]?.location ?? ""}
-                tags={[trip.interests, trip.travelStyle]}
-                price={trip.estimatedPrice}
-              />
-            ))}
-          </div>
-        </section>
+      {/* popular trips */}
+      <section className="flex flex-col gap-6">
+        <h2 className="p-24-semibold text-dark-100">Popular Trips</h2>
+        <div className="trip-grid">
+          {allTrips.map((trip) => (
+            <TripCard
+              key={trip.id}
+              id={trip.id}
+              name={trip.name}
+              imageUrl={trip.imageUrls[0]}
+              location={trip.itinerary?.[0]?.location ?? ""}
+              tags={[trip.interests, trip.travelStyle]}
+              price={trip.estimatedPrice}
+            />
+          ))}
+        </div>
       </section>
     </main>
   );
