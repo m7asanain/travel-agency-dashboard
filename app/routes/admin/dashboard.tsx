@@ -11,6 +11,7 @@ import { parseTripData } from "~/lib/utils";
 import {
   Category,
   ChartComponent,
+  ColumnsDirective,
   ColumnSeries,
   DataLabel,
   Inject,
@@ -19,7 +20,9 @@ import {
   SplineAreaSeries,
   Tooltip,
 } from "@syncfusion/ej2-react-charts";
+import { ColumnDirective } from "@syncfusion/ej2-react-grids";
 import { tripXAxis, tripyAxis, userXAxis, useryAxis } from "~/constants";
+import { GridComponent } from "@syncfusion/ej2-react-grids";
 
 export const clientLoader = async () => {
   const [
@@ -70,6 +73,27 @@ const dashboard = ({ loaderData }: Route.ComponentProps) => {
   const user = loaderData.user as User | null;
   const { dashboardStats, allTrips, userGrowth, tripsByTravelStyle, allUsers } =
     loaderData;
+
+  const trips = allTrips.map((trip) => ({
+    imageUrl: trip.imageUrls[0],
+    name: trip.name,
+    interest: trip.interests,
+  }));
+
+  const usersAndTrips = [
+    {
+      title: "Latest user signups",
+      dataSource: allUsers,
+      field: "count",
+      headerText: "Trips created",
+    },
+    {
+      title: "Trips based on interests",
+      dataSource: trips,
+      field: "interest",
+      headerText: "Interests",
+    },
+  ];
 
   return (
     <main className="dashboard wrapper">
@@ -202,6 +226,43 @@ const dashboard = ({ loaderData }: Route.ComponentProps) => {
             />
           </SeriesCollectionDirective>
         </ChartComponent>
+      </section>
+
+      <section className="user-trip wrapper">
+        {usersAndTrips.map(({ title, dataSource, field, headerText }, i) => (
+          <div key={i} className="flex flex-col gap-5">
+            <h3 className="p-20-semibold text-dark-100">{title}</h3>
+
+            <GridComponent dataSource={dataSource} gridLines="None">
+              <ColumnsDirective>
+                <ColumnDirective
+                  field="name"
+                  headerText="Name"
+                  width="200"
+                  textAlign="Left"
+                  template={(props: UserData) => (
+                    <div className="flex items-center gap-1.5 px-4">
+                      <img
+                        src={props.imageUrl}
+                        alt="user"
+                        className="rounded-full size-8 aspect-square"
+                        referrerPolicy="no-referrer"
+                      />
+                      <span>{props.name}</span>
+                    </div>
+                  )}
+                />
+
+                <ColumnDirective
+                  field={field}
+                  headerText={headerText}
+                  width="150"
+                  textAlign="Left"
+                />
+              </ColumnsDirective>
+            </GridComponent>
+          </div>
+        ))}
       </section>
     </main>
   );
