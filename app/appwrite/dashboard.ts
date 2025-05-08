@@ -50,6 +50,47 @@ export const getUsersAndTripsStats = async (): Promise<DashboardStats> => {
   };
 
   return {
-    // return...
+    totalUsers: users.total,
+    usersJoined: {
+      currentMonth: filterByDate(
+        users.documents,
+        "joinedAt", // key
+        startCurrent,
+        undefined
+      ),
+      lastMonth: filterByDate(users.documents, "joinedAt", startPrev, endPrev),
+    },
+
+    userRole: {
+      total: filterUsersByRole("user").length,
+      currentMonth: filterByDate(
+        filterUsersByRole("user"),
+        "joinedAt",
+        startCurrent,
+        undefined
+      ),
+      lastMonth: filterByDate(
+        filterUsersByRole("user"),
+        "joinedAt",
+        startPrev,
+        endPrev
+      ),
+    },
+
+    totalTrips: trips.total,
+    tripsCreated: {
+      currentMonth: filterByDate(
+        trips.documents,
+        "createdAt",
+        startCurrent,
+        undefined
+      ),
+      lastMonth: filterByDate(
+        filterUsersByRole("user"),
+        "joinedAt",
+        startPrev,
+        endPrev
+      ),
+    },
   };
 };

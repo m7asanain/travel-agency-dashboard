@@ -4,11 +4,22 @@ import { getUser } from "~/appwrite/auth";
 import { user, dashboardStats, allTrips, users } from "~/constants";
 
 import type { Route } from "./+types/dashboard";
+import { getUsersAndTripsStats } from "~/appwrite/dashboard";
 
 const { totalUsers, usersJoined, totalTrips, tripsCreated, userRole } =
   dashboardStats;
 
-export const clientLoader = async () => await getUser();
+export const clientLoader = async () => {
+  const [user, dashboardStats] = await Promise.all([
+    getUser(),
+    getUsersAndTripsStats(),
+  ]);
+
+  return {
+    user,
+    dashboardStats,
+  };
+};
 
 // throw an error for testing sentry
 // export async function loader() {
@@ -16,7 +27,8 @@ export const clientLoader = async () => await getUser();
 // }
 
 const dashboard = ({ loaderData }: Route.ComponentProps) => {
-  const user = loaderData as User | null;
+  const user = loaderData.user as User | null;
+  const { dashboardStats } = loaderData;
 
   return (
     <main className="dashboard wrapper">
@@ -29,23 +41,23 @@ const dashboard = ({ loaderData }: Route.ComponentProps) => {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full">
           <StatsCard
             headerTitle="Total Users"
-            total={totalUsers}
-            currentMonthCount={usersJoined.currentMonth}
-            lastMonthCount={usersJoined.lastMonth}
+            total={dashboardStats.totalUsers}
+            currentMonthCount={dashboardStats.usersJoined.currentMonth}
+            lastMonthCount={dashboardStats.usersJoined.lastMonth}
           />
 
           <StatsCard
             headerTitle="Total Trips"
-            total={totalTrips}
-            currentMonthCount={tripsCreated.currentMonth}
-            lastMonthCount={tripsCreated.lastMonth}
+            total={dashboardStats.totalTrips}
+            currentMonthCount={dashboardStats.tripsCreated.currentMonth}
+            lastMonthCount={dashboardStats.tripsCreated.lastMonth}
           />
 
           <StatsCard
             headerTitle="Active Users"
-            total={userRole.total}
-            currentMonthCount={userRole.currentMonth}
-            lastMonthCount={userRole.lastMonth}
+            total={dashboardStats.userRole.total}
+            currentMonthCount={dashboardStats.userRole.currentMonth}
+            lastMonthCount={dashboardStats.userRole.lastMonth}
           />
         </div>
       </section>
