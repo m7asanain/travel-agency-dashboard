@@ -1,4 +1,5 @@
-import { appwriteConfig, database } from "./client";
+import { parseTripData } from "~/lib/utils";
+import { database, appwriteConfig } from "./client";
 
 interface Document {
   [key: string]: any;
@@ -12,22 +13,14 @@ type FilterByDate = (
 ) => number;
 
 export const getUsersAndTripsStats = async (): Promise<DashboardStats> => {
-  const date = new Date();
-  const startCurrent = new Date(
-    date.getFullYear(),
-    date.getMonth(),
-    1
-  ).toISOString();
+  const d = new Date();
+  const startCurrent = new Date(d.getFullYear(), d.getMonth(), 1).toISOString();
   const startPrev = new Date(
-    date.getFullYear(),
-    date.getMonth() - 1,
+    d.getFullYear(),
+    d.getMonth() - 1,
     1
   ).toISOString();
-  const endPrev = new Date(
-    date.getFullYear(),
-    date.getMonth(),
-    0
-  ).toISOString();
+  const endPrev = new Date(d.getFullYear(), d.getMonth(), 0).toISOString();
 
   const [users, trips] = await Promise.all([
     database.listDocuments(
@@ -40,7 +33,6 @@ export const getUsersAndTripsStats = async (): Promise<DashboardStats> => {
     ),
   ]);
 
-  // counts how many documents in an array fall within a given date range
   const filterByDate: FilterByDate = (items, key, start, end) =>
     items.filter((item) => item[key] >= start && (!end || item[key] <= end))
       .length;
@@ -54,13 +46,12 @@ export const getUsersAndTripsStats = async (): Promise<DashboardStats> => {
     usersJoined: {
       currentMonth: filterByDate(
         users.documents,
-        "joinedAt", // key
+        "joinedAt",
         startCurrent,
         undefined
       ),
       lastMonth: filterByDate(users.documents, "joinedAt", startPrev, endPrev),
     },
-
     userRole: {
       total: filterUsersByRole("user").length,
       currentMonth: filterByDate(
@@ -76,7 +67,6 @@ export const getUsersAndTripsStats = async (): Promise<DashboardStats> => {
         endPrev
       ),
     },
-
     totalTrips: trips.total,
     tripsCreated: {
       currentMonth: filterByDate(
@@ -93,4 +83,79 @@ export const getUsersAndTripsStats = async (): Promise<DashboardStats> => {
       ),
     },
   };
+};
+
+export const getUserGrowthPerDay = async () => {
+  const users = await database.listDocuments(
+    appwriteConfig.databaseId,
+    appwriteConfig.userCollectionId
+  );
+
+  const userGrowth = users.documents.reduce(
+    (acc: { [key: string]: number }, user: Document) => {
+      const date = new Date(user.joinedAt);
+      const day = date.toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+      });
+      acc[day] = (acc[day] || 0) + 1;
+      return acc;
+    },
+    {}
+  );
+
+  return Object.entries(userGrowth).map(([day, count]) => ({
+    count: Number(count),
+    day,
+  }));
+};
+
+export const getTripsCreatedPerDay = async () => {
+  const trips = await database.listDocuments(
+    appwriteConfig.databaseId,
+    appwriteConfig.tripCollectionId
+  );
+
+  const tripsGrowth = trips.documents.reduce(
+    (acc: { [key: string]: number }, trip: Document) => {
+      const date = new Date(trip.createdAt);
+      const day = date.toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+      });
+      acc[day] = (acc[day] || 0) + 1;
+      return acc;
+    },
+    {}
+  );
+
+  return Object.entries(tripsGrowth).map(([day, count]) => ({
+    count: Number(count),
+    day,
+  }));
+};
+
+export const getTripsByTravelStyle = async () => {
+  const trips = await database.listDocuments(
+    appwriteConfig.databaseId,
+    appwriteConfig.tripCollectionId
+  );
+
+  const travelStyleCounts = trips.documents.reduce(
+    (acc: { [key: string]: number }, trip: Document) => {
+      const tripDetail = parseTripData(trip.tripDetails);
+
+      if (tripDetail && tripDetail.travelStyle) {
+        const travelStyle = tripDetail.travelStyle;
+        acc[travelStyle] = (acc[travelStyle] || 0) + 1;
+      }
+      return acc;
+    },
+    {}
+  );
+
+  return Object.entries(travelStyleCounts).map(([travelStyle, count]) => ({
+    count: Number(count),
+    travelStyle,
+  }));
 };
